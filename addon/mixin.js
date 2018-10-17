@@ -1,5 +1,4 @@
 import Ember from 'ember';
-import Errors from 'ember-validations/errors';
 import Base from 'ember-validations/validators/base';
 
 const {
@@ -107,13 +106,20 @@ export default Mixin.create(setValidityMixin, {
 
   init() {
     this._super(...arguments);
-    this.errors = Errors.create();
-    this.dependentValidationKeys = {};
-    this.validators = emberArray();
 
     if (get(this, 'validations') === undefined) {
       this.validations = {};
     }
+
+    const initErrors = Object.keys(get(this, 'validations')).reduce((acc, key) => {
+      acc[key] = emberArray();
+      return acc;
+    }, {});
+
+    this.errors = Ember.Object.create(initErrors);
+
+    this.dependentValidationKeys = {};
+    this.validators = emberArray();
 
     this.buildValidators();
 
