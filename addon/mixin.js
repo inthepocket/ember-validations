@@ -14,7 +14,8 @@ const {
   isPresent,
   set,
   warn,
-  getOwner
+  getOwner,
+  setProperties,
 } = Ember;
 
 const setValidityMixin = Mixin.create({
@@ -108,18 +109,24 @@ export default Mixin.create(setValidityMixin, {
     this._super(...arguments);
 
     if (get(this, 'validations') === undefined) {
-      this.validations = {};
+      set(this, 'validations', {});
     }
 
-    const initErrors = Object.keys(get(this, 'validations')).reduce((acc, key) => {
-      acc[key] = emberArray();
-      return acc;
-    }, {});
+    const initErrors = Ember.Object.create(
+      Object.keys(get(this, 'validations')).reduce((acc, key) => {
+        acc[key] = emberArray();
+        return acc;
+      }, {})
+    );
 
-    this.errors = Ember.Object.create(initErrors);
+    if (!get(this, 'errors')) {
+      set(this, 'errors', initErrors);
+    } else {
+      setProperties(get(this, 'errors'), initErrors);
+    }
 
-    this.dependentValidationKeys = {};
-    this.validators = emberArray();
+    set(this, 'dependentValidationKeys', {});
+    set(this, 'validators', emberArray());
 
     this.buildValidators();
 
